@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+		<xs:element name="Planeta" type="Planeta"/>	
+        <xs:element name="Galaxia">
+		<xs:complexType>
+			<xs:sequence>
+			<xs:element name="nombre" type="xs:string"></xs:element>
+			<xs:element name="Planetas">
+			   <xs:complexType>
+					<xs:sequence>
+						<xs:element name="Planeta" type="Planeta" minOccurs = "0" maxOccurs="unbounded" ></xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			</xs:sequence>			
+		</xs:complexType>
+        </xs:element>
+		<xs:complexType name="Planeta" >
+			   <xs:sequence>
+					  <xs:element name="nombre" type="xs:string"></xs:element>
+					  <xs:element name="edad" type="xs:int"></xs:element>
+					  <xs:element name="radio" type="xs:double"></xs:element>
+				</xs:sequence>
+		</xs:complexType>
+   </xs:schema>
