@@ -21,6 +21,9 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.core.MediaType;
 import Pojo.Galaxia;
 import Pojo.Planeta;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.naming.NamingException;
 
 /**
  * REST Web Service
@@ -57,7 +60,11 @@ public class ServiciosGalaxia {
             this.galaxia = galaxia2;
             respuesta = "Se ha creado la galaxia correctamente";
         } catch (Exception ex) {
-            respuesta = "Ha habido un error";
+            respuesta = ex.toString();
+//        } catch (NamingException ex) {
+//            Logger.getLogger(ServiciosGalaxia.class.getName()).log(Level.SEVERE, null, ex);
+//            respuesta = "Ha habido un error";
+
         }
         return respuesta;
     }
@@ -69,7 +76,7 @@ public class ServiciosGalaxia {
     }
 
     @POST
-    @Path("planetas")
+    @Path("planeta")
     @Consumes(MediaType.APPLICATION_XML)
     public String postPlaneta(Planeta planeta) {
         String respuesta;
@@ -77,26 +84,40 @@ public class ServiciosGalaxia {
             galaxia.annadirPlaneta(planeta);
             respuesta = "Se ha creado el planeta correctamente";
         } catch (Exception ex) {
-            respuesta = "Ha habido un error";
+            respuesta = ex.toString();
         }
         return respuesta;
     }
 
     @GET
-    @Path("planetas/{num}")
+    @Path("planeta")
+    @Produces(MediaType.APPLICATION_XML)
+    public List<Planeta> getPlanetas() {
+        List<Planeta> planetas = null;
+        try {
+            planetas = galaxia.getPlanetas();
+
+        } catch (Exception ex) {
+            System.out.println(ex);
+        }
+        return planetas;
+    }
+
+    @GET
+    @Path("planeta/{num}")
     @Produces(MediaType.APPLICATION_XML)
     public Planeta getPlaneta(@PathParam("num") int num) {
         Planeta planeta = null;
         try {
             planeta = galaxia.getPlaneta(num);
         } catch (Exception ex) {
-            System.out.println("Ha habido un error");
+            System.out.println(ex);
         }
         return planeta;
     }
 
     @PUT
-    @Path("planetas/{num}")
+    @Path("planeta/{num}")
     @Consumes(MediaType.APPLICATION_XML)
     public String putPlaneta(@PathParam("num") int num, Planeta planeta) {
         String respuesta;
@@ -105,13 +126,13 @@ public class ServiciosGalaxia {
             planetas.set(num, planeta);
             respuesta = "Se ha modificado el planeta correctamente";
         } catch (Exception ex) {
-            respuesta = "Ha habido un error";
+            respuesta = ex.toString();
         }
         return respuesta;
     }
 
     @DELETE
-    @Path("planetas/{num}")
+    @Path("planeta/{num}")
     // @Consumes(MediaType.APPLICATION_XML)
     public String deletePlaneta(@PathParam("num") int num) {
         String respuesta;
@@ -120,20 +141,20 @@ public class ServiciosGalaxia {
             planetas.remove(num);
             respuesta = "Se ha borrado el planeta correctamente";
         } catch (Exception ex) {
-            respuesta = "Ha habido un error";
+            respuesta = ex.toString();
         }
         return respuesta;
     }
 
     @GET
-    @Path("planetas")
+    @Path("planeta/texto")
     @Produces(MediaType.TEXT_PLAIN)
-    public String getPlanetas() {
+    public String getPlanetasTexto() {
         String respuesta;
         try {
             respuesta = galaxia.toString();
         } catch (Exception ex) {
-            respuesta = "Ha habido un error";
+            respuesta = ex.toString();
         }
         return respuesta;
     }
