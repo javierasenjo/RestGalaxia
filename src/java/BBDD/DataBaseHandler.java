@@ -5,22 +5,18 @@
  */
 package BBDD;
 
-import java.io.UnsupportedEncodingException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+import Pojo.Galaxia;
+import Pojo.Planeta;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.ArrayList;
+import java.util.List;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.servlet.RequestDispatcher;
 import javax.sql.DataSource;
-import javax.xml.bind.DatatypeConverter;
 
 /**
  *
@@ -140,11 +136,9 @@ public class DataBaseHandler {
             DataSource datasource;
             datasource = (DataSource) initialcontext.lookup("jdbc/galaxiaDatabase");
             Connection conn = datasource.getConnection();
-            String query = "create table if not exists galaxiaPrueba (galaxiaID int auto_increment not null primary key, nombreGalaxia varchar(255) not null);";
-            String query2 = "create table if not existst planeta(planetaID int auto_increment not null primary key, nombrePlaneta varchar(255) not null, edadPlaneta int not null, radioPlaneta double not null, galaxiaID int not null, foreign key(galaxiaID) references galaxia(galaxiaID));";
+            String query = "create table if not exists planetas(planetaID int auto_increment not null primary key, nombrePlaneta varchar(255) not null, edadPlaneta int not null, radioPlaneta double not null);";
             Statement st = conn.createStatement();
             st.executeUpdate(query);
-            st.executeUpdate(query2);
             conn.close();
         } catch (SQLException e) {
             // TODO Auto-generated catch block
@@ -158,7 +152,7 @@ public class DataBaseHandler {
             Class.forName("com.mysql.jdbc.Driver");
             Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/galaxia?zeroDateTimeBehavior=convertToNull");
             Statement st = conn.createStatement();
-            int myResult = st.executeUpdate("CREATE DATABASE IF NOT EXISTS galaxia2");
+            int myResult = st.executeUpdate("CREATE DATABASE IF NOT EXISTS galaxia");
             System.out.println("Database created !");
             conn.close();
         } catch (ClassNotFoundException | SQLException e) {
@@ -169,23 +163,125 @@ public class DataBaseHandler {
     }
 //solo una tabla planeta, tener pojo planeta con id pero no obligatorio
     //pool ya funciona
-    
 
-    public void prueba() {
+    public Galaxia crearGalaxia(Galaxia galaxia) throws NamingException, SQLException {
+        InitialContext initialcontext = new InitialContext();
+        DataSource datasource;
+        datasource = (DataSource) initialcontext.lookup("jdbc/galaxiaDatabase");
+        Connection conn = datasource.getConnection();
+
+        String query = "insert into galaxias (nombreGalaxia) values('" + galaxia.getNombre() + "');";
+        Statement st = conn.createStatement();
+        st.executeUpdate(query);
+
+        String query2 = "select galaxiaId from galaxias where nombreGalaxia ='" + galaxia.getNombre() + "';";
+        Statement st2 = conn.createStatement();
+        ResultSet rs = st2.executeQuery(query2);
+        int galaxiaId = 0;
+        if (rs.next()) {
+            galaxiaId = rs.getInt(1);
+        }
+        Galaxia galaxiaRes = obtenerGalaxia(galaxiaId);
+        conn.close();
+        return galaxiaRes;
+    }
+
+    public Galaxia obtenerGalaxia(int galaxiaId) {
+        Galaxia galaxia = null;
         try {
-            Class.forName("com.mysql.jdbc.Driver");
-            Connection con = DriverManager.getConnection(
-                    "jdbc:mysql://localhost:3306/galaxia?useSSL=false", "root", "root");
-
-            Statement stmt = con.createStatement();
-            ResultSet rs = stmt.executeQuery("select * from planeta");
-            while (rs.next()) {
-                System.out.println(rs.getInt(1) + "  " + rs.getString(2) + "  " + rs.getInt(3));
+            InitialContext initialcontext = new InitialContext();
+            DataSource datasource;
+            datasource = (DataSource) initialcontext.lookup("jdbc/galaxiaDatabase");
+            Connection conn = datasource.getConnection();
+            String query = "select * from galaxias where galaxiaId =" + galaxiaId + ";";
+            Statement st = conn.createStatement();
+            ResultSet rs = st.executeQuery(query);
+            String nombreGalaxia = "";
+            if (rs.next()) {
+                nombreGalaxia = rs.getString(1);
             }
-            con.close();
+            galaxia = new Galaxia(nombreGalaxia, obtenerPlanetas(galaxiaId));
+            conn.close();
         } catch (Exception e) {
             System.out.println(e);
         }
+        return galaxia;
     }
 
+    public List<Planeta> obtenerPlanetas(int galaxiaId) {
+        List<Planeta> listaPlanetas = new ArrayList();
+        try {
+            InitialContext initialcontext = new InitialContext();
+            DataSource datasource;
+            datasource = (DataSource) initialcontext.lookup("jdbc/galaxiaDatabase");
+            Connection conn = datasource.getConnection();
+            String query = "select * from planetas where galaxiaId ='" + galaxiaId + "';";
+            Statement st = conn.createStatement();
+            ResultSet rs = st.executeQuery(query);
+
+            while (rs.next()) {
+
+                Planeta planeta = new Planeta(rs.getInt(1), rs.getString(2), rs.getInt(3), rs.getDouble(4), rs.getString(6));
+                listaPlanetas.add(planeta);
+            }
+            conn.close();
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+        return listaPlanetas;
+    }
+
+    public Galaxia crearPlaneta(Planeta planeta, int galaxiaId) throws NamingException, SQLException {
+        InitialContext initialcontext = new InitialContext();
+        DataSource datasource;
+        datasource = (DataSource) initialcontext.lookup("jdbc/galaxiaDatabase");
+        Connection conn = datasource.getConnection();
+        String query = "insert into planetas (nombrePlaneta,edadPlaneta,radioPlaneta,galaxiaId) values('" + planeta.getNombre() + "'," + planeta.getEdad() + "," + planeta.getRadio() + "," + galaxiaId + ");";
+        Statement st = conn.createStatement();
+        st.executeUpdate(query);
+
+        annadirLink(planeta);
+        Galaxia galaxiaRes = obtenerGalaxia(galaxiaId);
+        conn.close();
+        return galaxiaRes;
+    }
+
+    private static void annadirLink(Planeta planeta) throws NamingException, SQLException {
+        InitialContext initialcontext = new InitialContext();
+        DataSource datasource;
+        datasource = (DataSource) initialcontext.lookup("jdbc/galaxiaDatabase");
+        Connection conn = datasource.getConnection();
+
+        String query2 = "select planetaId from planetas where nombrePlaneta ='" + planeta.getNombre() + "';";
+        Statement st2 = conn.createStatement();
+        ResultSet rs = st2.executeQuery(query2);
+        int planetaId = 0;
+        if (rs.next()) {
+            planetaId = rs.getInt(1);
+        }
+        String query = "update planetas set link = '" + planeta.crearLink(planetaId) + "' where planetaId = " + planetaId + ";";
+        Statement st = conn.createStatement();
+        st.executeUpdate(query);
+        conn.close();
+    }
+
+    public Planeta obtenerPlaneta(int galaxiaId, int planetaId) {
+        Planeta planeta = null;
+        try {
+            InitialContext initialcontext = new InitialContext();
+            DataSource datasource;
+            datasource = (DataSource) initialcontext.lookup("jdbc/galaxiaDatabase");
+            Connection conn = datasource.getConnection();
+            String query = "select * from planetas where galaxiaId =" + galaxiaId + " and planetaId = " + planetaId + ";";
+            Statement st = conn.createStatement();
+            ResultSet rs = st.executeQuery(query);
+            if (rs.next()) {
+                planeta = new Planeta(rs.getInt(1), rs.getString(2), rs.getInt(3), rs.getDouble(4), rs.getString(6));
+            }
+            conn.close();
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+        return planeta;
+    }
 }

@@ -20,7 +20,9 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.MediaType;
 import Pojo.Galaxia;
+import Pojo.ListaPlanetas;
 import Pojo.Planeta;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.naming.NamingException;
@@ -34,7 +36,7 @@ import javax.naming.NamingException;
 @Path("galaxia")
 public class ServiciosGalaxia {
 
-    Galaxia galaxia;
+//    Galaxia galaxia;
     @Context
     private UriInfo context;
     DataBaseHandler dataBaseHandler = new DataBaseHandler();
@@ -53,106 +55,104 @@ public class ServiciosGalaxia {
      */
     @POST
     @Consumes(MediaType.APPLICATION_XML)
-    public String postGalaxia(Galaxia galaxia2) {
-        String respuesta;
+    public Galaxia postGalaxia(Galaxia galaxia2) {
+        Galaxia galaxiaRes = null;
         try {
-            //dataBaseHandler.createTable();
-            this.galaxia = galaxia2;
-            respuesta = "Se ha creado la galaxia correctamente";
+            galaxiaRes = dataBaseHandler.crearGalaxia(galaxia2);
+            //this.galaxia = galaxia2;
+
         } catch (Exception ex) {
-            respuesta = ex.toString();
-//        } catch (NamingException ex) {
-//            Logger.getLogger(ServiciosGalaxia.class.getName()).log(Level.SEVERE, null, ex);
-//            respuesta = "Ha habido un error";
+            Logger.getLogger(ServiciosGalaxia.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println(ex);
 
         }
-        return respuesta;
+        return galaxiaRes;
     }
 
     @GET
+    @Path("{numGalaxia}")
     @Produces(MediaType.APPLICATION_XML)
-    public Galaxia getGalaxia() {
-        return this.galaxia;
+    public Galaxia getGalaxia(@PathParam("numGalaxia") int numGalaxia) {
+        return dataBaseHandler.obtenerGalaxia(numGalaxia);
     }
 
     @POST
-    @Path("planeta")
+    @Path("{numGalaxia}/planeta")
     @Consumes(MediaType.APPLICATION_XML)
-    public String postPlaneta(Planeta planeta) {
-        String respuesta;
+    public Galaxia postPlaneta(Planeta planeta, @PathParam("numGalaxia") int numGalaxia) {
+        Galaxia galaxia = null;
         try {
-            galaxia.annadirPlaneta(planeta);
-            respuesta = "Se ha creado el planeta correctamente";
+            dataBaseHandler.crearPlaneta(planeta, numGalaxia);
+            galaxia = dataBaseHandler.obtenerGalaxia(numGalaxia);
         } catch (Exception ex) {
-            respuesta = ex.toString();
+            System.out.println(ex);
         }
-        return respuesta;
+        return galaxia;
     }
 
     @GET
-    @Path("planeta")
+    @Path("{numGalaxia}/planeta")
     @Produces(MediaType.APPLICATION_XML)
-    public List<Planeta> getPlanetas() {
+    public ListaPlanetas getPlanetas(@PathParam("numGalaxia") int numGalaxia) {
         List<Planeta> planetas = null;
         try {
-            planetas = galaxia.getPlanetas();
+            planetas = dataBaseHandler.obtenerPlanetas(numGalaxia);
 
         } catch (Exception ex) {
             System.out.println(ex);
         }
-        return planetas;
+        return new ListaPlanetas(planetas);
     }
 
     @GET
-    @Path("planeta/{num}")
+    @Path("{numGalaxia}/planeta/{numPlaneta}")
     @Produces(MediaType.APPLICATION_XML)
-    public Planeta getPlaneta(@PathParam("num") int num) {
+    public Planeta getPlaneta(@PathParam("numPlaneta") int numPlaneta, @PathParam("numGalaxia") int numGalaxia) {
         Planeta planeta = null;
         try {
-            planeta = galaxia.getPlaneta(num);
+            planeta = dataBaseHandler.obtenerPlaneta(numGalaxia, numPlaneta);
         } catch (Exception ex) {
             System.out.println(ex);
         }
         return planeta;
     }
 
-    @PUT
-    @Path("planeta/{num}")
-    @Consumes(MediaType.APPLICATION_XML)
-    public String putPlaneta(@PathParam("num") int num, Planeta planeta) {
-        String respuesta;
-        try {
-            List<Planeta> planetas = galaxia.getPlanetas();
-            planetas.set(num, planeta);
-            respuesta = "Se ha modificado el planeta correctamente";
-        } catch (Exception ex) {
-            respuesta = ex.toString();
-        }
-        return respuesta;
-    }
-
-    @DELETE
-    @Path("planeta/{num}")
-    // @Consumes(MediaType.APPLICATION_XML)
-    public String deletePlaneta(@PathParam("num") int num) {
-        String respuesta;
-        try {
-            List<Planeta> planetas = galaxia.getPlanetas();
-            planetas.remove(num);
-            respuesta = "Se ha borrado el planeta correctamente";
-        } catch (Exception ex) {
-            respuesta = ex.toString();
-        }
-        return respuesta;
-    }
-
+//    @PUT
+//    @Path("{numGalaxia}/planeta/{numPlaneta}")
+//    @Consumes(MediaType.APPLICATION_XML)
+//    public String putPlaneta(@PathParam("numPlaneta") int numPlaneta, Planeta planeta,@PathParam("numGalaxia") int numGalaxia) {
+//        String respuesta;
+//        try {
+//            List<Planeta> planetas = galaxia.getPlanetas();
+//            planetas.set(numPlaneta, planeta);
+//            respuesta = "Se ha modificado el planeta correctamente";
+//        } catch (Exception ex) {
+//            respuesta = ex.toString();
+//        }
+//        return respuesta;
+//    }
+//
+//    @DELETE
+//    @Path("{numGalaxia}/planeta/{numPlaneta}")
+//    // @Consumes(MediaType.APPLICATION_XML)
+//    public String deletePlaneta(@PathParam("numPlaneta") int numPlaneta,@PathParam("numGalaxia") int numGalaxia) {
+//        String respuesta;
+//        try {
+//            List<Planeta> planetas = galaxia.getPlanetas();
+//            planetas.remove(num);
+//            respuesta = "Se ha borrado el planeta correctamente";
+//        } catch (Exception ex) {
+//            respuesta = ex.toString();
+//        }
+//        return respuesta;
+//    }
     @GET
-    @Path("planeta/texto")
+    @Path("{numGalaxia}/planeta/texto")
     @Produces(MediaType.TEXT_PLAIN)
-    public String getPlanetasTexto() {
+    public String getPlanetasTexto(@PathParam("numGalaxia") int numGalaxia) {
         String respuesta;
         try {
-            respuesta = galaxia.toString();
+            respuesta = dataBaseHandler.obtenerGalaxia(numGalaxia).toString();
         } catch (Exception ex) {
             respuesta = ex.toString();
         }
