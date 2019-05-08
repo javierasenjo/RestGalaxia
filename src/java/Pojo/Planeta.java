@@ -20,15 +20,16 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class Planeta implements Serializable {
 
     @XmlElement
+    private Integer idPlaneta;
+    @XmlElement
     private String nombre;
     @XmlElement
     private Integer edad;
     @XmlElement
     private Double radio;
-    @XmlElement (required=false)
+    @XmlElement
     private String linkPlaneta;
-    @XmlElement (required=false)
-    private Integer idPlaneta;
+
     public Planeta() {
     }
 
@@ -37,11 +38,12 @@ public class Planeta implements Serializable {
         this.edad = edad;
         this.radio = radio;
     }
-    public Planeta(int planetaId, String nombre, Integer edad, Double radio, String link) {
+
+    public Planeta(Integer planetaId, String nombre, Integer edad, Double radio, String link) {
         this.nombre = nombre;
         this.edad = edad;
         this.radio = radio;
-        this.idPlaneta = idPlaneta;
+        this.idPlaneta = planetaId;
         this.linkPlaneta = link;
     }
 
@@ -49,8 +51,6 @@ public class Planeta implements Serializable {
     public String toString() {
         return "Planeta{" + "nombre=" + nombre + ", edad=" + edad + ", radio=" + radio + ", linkPlaneta=" + linkPlaneta + ", idPlaneta=" + idPlaneta + '}';
     }
-
-
 
     /**
      * @return the nombre
@@ -121,8 +121,8 @@ public class Planeta implements Serializable {
     public void setIdPlaneta(Integer idPlaneta) {
         this.idPlaneta = idPlaneta;
     }
-    
-    public String crearLink(int idPlaneta){
-        return "http://localhost:8080/RestGalaxia/webresources/galaxia/planeta/" + idPlaneta;
+
+    public String crearLink(int idPlaneta, int idGalaxia) {
+        return "http://localhost:8080/RestGalaxia/webresources/galaxia/" + idGalaxia + "/planeta/" + idPlaneta;
     }
 }

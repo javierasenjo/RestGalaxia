@@ -174,6 +174,8 @@ public class DataBaseHandler {
         Statement st = conn.createStatement();
         st.executeUpdate(query);
 
+        annadirLinkGalaxia(galaxia);
+
         String query2 = "select galaxiaId from galaxias where nombreGalaxia ='" + galaxia.getNombre() + "';";
         Statement st2 = conn.createStatement();
         ResultSet rs = st2.executeQuery(query2);
@@ -181,6 +183,12 @@ public class DataBaseHandler {
         if (rs.next()) {
             galaxiaId = rs.getInt(1);
         }
+        Planeta planeta = null;
+        for (int i = 0; i < galaxia.contarPlanetas(); i++) {
+            planeta = galaxia.getPlaneta(i);
+            crearPlaneta(planeta, galaxiaId);
+        }
+
         Galaxia galaxiaRes = obtenerGalaxia(galaxiaId);
         conn.close();
         return galaxiaRes;
@@ -196,11 +204,14 @@ public class DataBaseHandler {
             String query = "select * from galaxias where galaxiaId =" + galaxiaId + ";";
             Statement st = conn.createStatement();
             ResultSet rs = st.executeQuery(query);
-            String nombreGalaxia = "";
+            String nombreGalaxia = "", linkGalaxia = "";
+            int idGalaxia = 0;
             if (rs.next()) {
-                nombreGalaxia = rs.getString(1);
+                idGalaxia = rs.getInt(1);
+                nombreGalaxia = rs.getString(2);
+                linkGalaxia = rs.getNString(3);
             }
-            galaxia = new Galaxia(nombreGalaxia, obtenerPlanetas(galaxiaId));
+            galaxia = new Galaxia(idGalaxia, nombreGalaxia, obtenerPlanetas(galaxiaId), linkGalaxia);
             conn.close();
         } catch (Exception e) {
             System.out.println(e);
@@ -223,6 +234,7 @@ public class DataBaseHandler {
 
                 Planeta planeta = new Planeta(rs.getInt(1), rs.getString(2), rs.getInt(3), rs.getDouble(4), rs.getString(6));
                 listaPlanetas.add(planeta);
+                System.out.println(planeta.toString());
             }
             conn.close();
         } catch (Exception e) {
@@ -231,7 +243,7 @@ public class DataBaseHandler {
         return listaPlanetas;
     }
 
-    public Galaxia crearPlaneta(Planeta planeta, int galaxiaId) throws NamingException, SQLException {
+    public Planeta crearPlaneta(Planeta planeta, int galaxiaId) throws NamingException, SQLException {
         InitialContext initialcontext = new InitialContext();
         DataSource datasource;
         datasource = (DataSource) initialcontext.lookup("jdbc/galaxiaDatabase");
@@ -240,18 +252,7 @@ public class DataBaseHandler {
         Statement st = conn.createStatement();
         st.executeUpdate(query);
 
-        annadirLink(planeta);
-        Galaxia galaxiaRes = obtenerGalaxia(galaxiaId);
-        conn.close();
-        return galaxiaRes;
-    }
-
-    private static void annadirLink(Planeta planeta) throws NamingException, SQLException {
-        InitialContext initialcontext = new InitialContext();
-        DataSource datasource;
-        datasource = (DataSource) initialcontext.lookup("jdbc/galaxiaDatabase");
-        Connection conn = datasource.getConnection();
-
+        annadirLinkPlaneta(planeta);
         String query2 = "select planetaId from planetas where nombrePlaneta ='" + planeta.getNombre() + "';";
         Statement st2 = conn.createStatement();
         ResultSet rs = st2.executeQuery(query2);
@@ -259,7 +260,49 @@ public class DataBaseHandler {
         if (rs.next()) {
             planetaId = rs.getInt(1);
         }
-        String query = "update planetas set link = '" + planeta.crearLink(planetaId) + "' where planetaId = " + planetaId + ";";
+
+        Planeta planeta2 = obtenerPlaneta(galaxiaId, planetaId);
+        conn.close();
+        return planeta2;
+    }
+
+    private static void annadirLinkPlaneta(Planeta planeta) throws NamingException, SQLException {
+        InitialContext initialcontext = new InitialContext();
+        DataSource datasource;
+        datasource = (DataSource) initialcontext.lookup("jdbc/galaxiaDatabase");
+        Connection conn = datasource.getConnection();
+
+        String query2 = "select planetaId, galaxiaId from planetas where nombrePlaneta ='" + planeta.getNombre() + "';";
+        Statement st2 = conn.createStatement();
+        ResultSet rs = st2.executeQuery(query2);
+        int planetaId = 0;
+        int galaxiaId = 0;
+        if (rs.next()) {
+            planetaId = rs.getInt(1);
+            galaxiaId = rs.getInt(2);
+        }
+
+        String query = "update planetas set linkPlaneta = '" + planeta.crearLink(planetaId, galaxiaId) + "' where planetaId = " + planetaId + ";";
+        Statement st = conn.createStatement();
+        st.executeUpdate(query);
+        conn.close();
+    }
+
+    private static void annadirLinkGalaxia(Galaxia galaxia) throws NamingException, SQLException {
+        InitialContext initialcontext = new InitialContext();
+        DataSource datasource;
+        datasource = (DataSource) initialcontext.lookup("jdbc/galaxiaDatabase");
+        Connection conn = datasource.getConnection();
+
+        String query2 = "select galaxiaId from galaxias where nombreGalaxia ='" + galaxia.getNombre() + "';";
+        Statement st2 = conn.createStatement();
+        ResultSet rs = st2.executeQuery(query2);
+        int galaxiaId = 0;
+        if (rs.next()) {
+            galaxiaId = rs.getInt(1);
+        }
+
+        String query = "update galaxias set linkGalaxia = '" + galaxia.crearLink(galaxiaId) + "' where galaxiaId = " + galaxiaId + ";";
         Statement st = conn.createStatement();
         st.executeUpdate(query);
         conn.close();
@@ -284,4 +327,133 @@ public class DataBaseHandler {
         }
         return planeta;
     }
+
+    public Galaxia borrarPlaneta(int galaxiaId, int planetaId) {
+        Galaxia galaxia = null;
+        try {
+            InitialContext initialcontext = new InitialContext();
+            DataSource datasource;
+            datasource = (DataSource) initialcontext.lookup("jdbc/galaxiaDatabase");
+            Connection conn = datasource.getConnection();
+            String query = "delete from planetas where galaxiaId =" + galaxiaId + " and planetaId = " + planetaId + ";";
+            Statement st = conn.createStatement();
+            st.executeUpdate(query);
+            conn.close();
+            galaxia = obtenerGalaxia(galaxiaId);
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+        return galaxia;
+    }
+
+    public Planeta modificarPlaneta(Planeta planeta, int planetaId, int galaxiaId) throws NamingException, SQLException {
+        InitialContext initialcontext = new InitialContext();
+        DataSource datasource;
+        datasource = (DataSource) initialcontext.lookup("jdbc/galaxiaDatabase");
+        Connection conn = datasource.getConnection();
+        String query = "update planetas set nombrePlaneta ='" + planeta.getNombre() + "', edadPlaneta=" + planeta.getEdad() + ", radioPlaneta = " + planeta.getRadio() + " where planetaId =" + planetaId + " and galaxiaId = " + galaxiaId + ";";
+        Statement st = conn.createStatement();
+        st.executeUpdate(query);
+
+        annadirLinkPlaneta(planeta);
+        Planeta planetaNuevo = obtenerPlaneta(galaxiaId, planetaId);
+        return planetaNuevo;
+    }
+
+    public String comprobarUsuario(String usuario, String password) {
+        String respuesta = "";
+        try {
+            InitialContext initialcontext = new InitialContext();
+            DataSource datasource;
+            datasource = (DataSource) initialcontext.lookup("jdbc/galaxiaDatabase");
+            Connection conn = datasource.getConnection();
+            String query = "select * from usuarios where nombre ='" + usuario + "' and password = '" + password + "';";
+            Statement st = conn.createStatement();
+            ResultSet rs = st.executeQuery(query);
+            if (rs.next()) {
+                respuesta = "Usuario válido";
+            }
+            conn.close();
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+        return respuesta;
+    }
+
+    public String registrarUsuario(String usuario, String password) {
+        //comprovar si ya existe nombre en bbdd
+        String respuesta = "";
+        try {
+            InitialContext initialcontext = new InitialContext();
+            DataSource datasource;
+            datasource = (DataSource) initialcontext.lookup("jdbc/galaxiaDatabase");
+            Connection conn = datasource.getConnection();
+            String query = "insert into usuarios (nombre,password) values('" + usuario + "','" + password + "');";
+            Statement st = conn.createStatement();
+            st.executeUpdate(query);
+            respuesta = "Se ha registrado correctamente el usuario";
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+        return respuesta;
+    }
+
+    public void guardarToken(String usuario, String password, String token) {
+        try {
+            InitialContext initialcontext = new InitialContext();
+            DataSource datasource;
+            datasource = (DataSource) initialcontext.lookup("jdbc/galaxiaDatabase");
+            Connection conn = datasource.getConnection();
+
+            String usuarioId = getUsuarioId(usuario, password);
+            String query = "update usuarios set token = '" + token + "' where usuarioId = " + usuarioId + ";";
+            Statement st = conn.createStatement();
+            st.executeUpdate(query);
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+    }
+
+    public String getUsuarioId(String usuario, String password) {
+        String usuarioId = "";
+        try {
+            InitialContext initialcontext = new InitialContext();
+            DataSource datasource;
+            datasource = (DataSource) initialcontext.lookup("jdbc/galaxiaDatabase");
+            Connection conn = datasource.getConnection();
+            String query = "select usuarioId from usuarios where nombre ='" + usuario + "' and password = '" + password + "';";
+            Statement st = conn.createStatement();
+            ResultSet rs = st.executeQuery(query);
+
+            if (rs.next()) {
+                usuarioId = rs.getString(1);
+            }
+            st.executeQuery(query);
+
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+        return usuarioId;
+    }
+
+    public void compobarToken(String token) throws NamingException, SQLException {
+        String respuesta = "";
+        try {
+            InitialContext initialcontext = new InitialContext();
+            DataSource datasource;
+            datasource = (DataSource) initialcontext.lookup("jdbc/galaxiaDatabase");
+            Connection conn = datasource.getConnection();
+            String query = "select usuarioId from usuarios where token ='" + token + "';";
+            Statement st = conn.createStatement();
+            ResultSet rs = st.executeQuery(query);
+            if (rs.next()) {
+                respuesta = rs.getString(1);
+                System.out.println("eeeeeeeeeeeeeeeeeeeeeooo" + respuesta);
+            }
+            st.executeQuery(query);
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+    }
+
 }
