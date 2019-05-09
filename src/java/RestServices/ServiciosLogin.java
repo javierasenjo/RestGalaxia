@@ -6,8 +6,6 @@
 package RestServices;
 
 import BBDD.DataBaseHandler;
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.algorithms.Algorithm;
 import com.sun.codemodel.JSwitch;
 import java.util.logging.Level;
 import java.util.logging.Logger;

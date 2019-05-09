@@ -6,7 +6,11 @@
 package RestServices;
 
 import BBDD.DataBaseHandler;
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.Priority;
+import javax.naming.NamingException;
 import javax.ws.rs.Priorities;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
@@ -26,6 +30,7 @@ public class FiltroAutentificacicion implements ContainerRequestFilter {
     private static final String REALM = "example";
     private static final String AUTHENTICATION_SCHEME = "Bearer";
 
+    Boolean resultado = false;
     DataBaseHandler dataBaseHandler = new DataBaseHandler();
 
     @Override
@@ -40,17 +45,11 @@ public class FiltroAutentificacicion implements ContainerRequestFilter {
             abortWithUnauthorized(requestContext);
             return;
         }
-        System.out.println("erthgyaer4Sgrfzdg");
-        // Extract the token from the Authorization header
-        String token = authorizationHeader
-                .substring(AUTHENTICATION_SCHEME.length()).trim();
 
-        try {
-
-            // Validate the token
-            validateToken(token);
-
-        } catch (Exception e) {
+        if (validateToken(authorizationHeader)) {
+            System.out.println("Token valido");
+        } else {
+            System.out.println("no funciona");
             abortWithUnauthorized(requestContext);
         }
     }
@@ -60,7 +59,7 @@ public class FiltroAutentificacicion implements ContainerRequestFilter {
         // Check if the Authorization header is valid
         // It must not be null and must be prefixed with "Bearer" plus a whitespace
         // The authentication scheme comparison must be case-insensitive
-        return authorizationHeader != null;
+        return authorizationHeader != null || authorizationHeader.length() == 30;
     }
 
     private void abortWithUnauthorized(ContainerRequestContext requestContext) {
@@ -74,10 +73,11 @@ public class FiltroAutentificacicion implements ContainerRequestFilter {
                         .build());
     }
 
-    private void validateToken(String token) throws Exception {
+    private boolean validateToken(String token) {
+
         // Check if the token was issued by the server and if it's not expired
         // Throw an Exception if the token is invalid
-        dataBaseHandler.compobarToken(token);
+        return dataBaseHandler.compobarToken(token);
     }
 
 }

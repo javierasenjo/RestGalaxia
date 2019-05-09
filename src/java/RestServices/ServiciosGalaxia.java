@@ -60,7 +60,6 @@ public class ServiciosGalaxia {
         Galaxia galaxiaRes = null;
         try {
             galaxiaRes = dataBaseHandler.crearGalaxia(galaxia2);
-            //this.galaxia = galaxia2;
         } catch (Exception ex) {
             Logger.getLogger(ServiciosGalaxia.class.getName()).log(Level.SEVERE, null, ex);
             System.out.println(ex);
@@ -78,6 +77,7 @@ public class ServiciosGalaxia {
 
     @POST
     @Path("{numGalaxia}/planeta")
+    @NecesidadToken
     @Consumes(MediaType.APPLICATION_XML)
     public Planeta postPlaneta(Planeta planeta, @PathParam("numGalaxia") int numGalaxia) {
         Planeta planeta2 = null;
@@ -92,6 +92,7 @@ public class ServiciosGalaxia {
 
     @GET
     @Path("{numGalaxia}/planeta")
+    @NecesidadToken
     @Produces(MediaType.APPLICATION_XML)
     public ListaPlanetas getPlanetas(@PathParam("numGalaxia") int numGalaxia) {
         List<Planeta> planetas = null;
@@ -106,6 +107,7 @@ public class ServiciosGalaxia {
 
     @GET
     @Path("{numGalaxia}/planeta/{numPlaneta}")
+    @NecesidadToken
     @Produces(MediaType.APPLICATION_XML)
     public Planeta getPlaneta(@PathParam("numPlaneta") int numPlaneta, @PathParam("numGalaxia") int numGalaxia) {
         Planeta planeta = null;
@@ -119,6 +121,7 @@ public class ServiciosGalaxia {
 
     @PUT
     @Path("{numGalaxia}/planeta/{numPlaneta}")
+    @NecesidadToken
     @Consumes(MediaType.APPLICATION_XML)
     @Produces(MediaType.APPLICATION_XML)
     public Planeta putPlaneta(@PathParam("numPlaneta") int numPlaneta, Planeta planeta, @PathParam("numGalaxia") int numGalaxia) {
@@ -133,6 +136,7 @@ public class ServiciosGalaxia {
 
     @DELETE
     @Path("{numGalaxia}/planeta/{numPlaneta}")
+    @NecesidadToken
     // @Consumes(MediaType.APPLICATION_XML)
     public Galaxia deletePlaneta(@PathParam("numPlaneta") int numPlaneta, @PathParam("numGalaxia") int numGalaxia) {
         Galaxia galaxia = null;
@@ -146,6 +150,7 @@ public class ServiciosGalaxia {
 
     @GET
     @Path("{numGalaxia}/planeta/texto")
+    @NecesidadToken
     @Produces(MediaType.TEXT_PLAIN)
     public String getPlanetasTexto(@PathParam("numGalaxia") int numGalaxia) {
         String respuesta;

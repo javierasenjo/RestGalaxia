@@ -23,112 +23,6 @@ import javax.sql.DataSource;
  * @author javie
  */
 public class DataBaseHandler {
-//
-//    public ResultSet loginear(String username, String password) throws SQLException {
-//        ResultSet rs = null;
-//        try {
-//            InitialContext initialcontext = new InitialContext();
-//            DataSource datasource;
-//            datasource = (DataSource) initialcontext.lookup("jdbc/galaxiaDatabase");
-//            Connection conn = datasource.getConnection();
-//            String query = "select * from tb_users where email ='" + username + "' and password ='" + password + "';";
-//            Statement st;
-//            st = conn.createStatement();
-//            rs = st.executeQuery(query);
-//            conn.close();
-//        } catch (NamingException ex) {
-//            Logger.getLogger(LoginChat.class.getName()).log(Level.SEVERE, null, ex);
-//        }
-//        return rs;
-//    }
-//
-//    public ResultSet comprobaciónUsuarioExiste(String username) throws SQLException {
-//        ResultSet rs = null;
-//        try {
-//            InitialContext initialcontext = new InitialContext();
-//            DataSource datasource;
-//            datasource = (DataSource) initialcontext.lookup("jdbc/galaxiaDatabase");
-//            Connection conn = datasource.getConnection();
-//            String query = "select * from tb_users where email ='" + username + "';";
-//            Statement st;
-//            st = conn.createStatement();
-//            rs = st.executeQuery(query);
-//            conn.close();
-//        } catch (NamingException ex) {
-//            Logger.getLogger(LoginChat.class.getName()).log(Level.SEVERE, null, ex);
-//        }
-//        return rs;
-//    }
-//
-//    public ResultSet register(String username, String password) throws SQLException, NamingException {
-//        ResultSet rs = null;
-//        try {
-//            InitialContext initialcontext = new InitialContext();
-//            DataSource datasource;
-//            datasource = (DataSource) initialcontext.lookup("jdbc/galaxiaDatabase");
-//            Connection conn = datasource.getConnection();
-//            String query = "select * from tb_users where email ='" + username + "' and password ='" + password + "';";
-//            Statement st;
-//            st = conn.createStatement();
-//            rs = st.executeQuery(query);
-//            if (!rs.next()) {
-//                username = "'" + username + "'";
-//                String contrasena = "'" + password + "'";
-//                query = "insert into tb_users values (" + username + ",sha1(" + contrasena + "));";
-//
-//                st = conn.createStatement();
-//                st.execute(query);
-//                conn.close();
-//            }
-//        } catch (Exception ex) {
-//            Logger.getLogger(LoginChat.class.getName()).log(Level.SEVERE, null, ex);
-//        }
-//        return rs;
-//    }
-//
-//    public void recuperarContrasena(String username, String password) throws SQLException {
-//        try {
-//            InitialContext initialcontext = new InitialContext();
-//            DataSource datasource;
-//            datasource = (DataSource) initialcontext.lookup("jdbc/galaxiaDatabase");
-//            Connection conn = datasource.getConnection();
-//            String query = "update tb_users set password =sha1('" + password + "') where email='" + username + "';";
-//            Statement st;
-//            st = conn.createStatement();
-//            st.executeUpdate(query);
-//            conn.close();
-//        } catch (NamingException ex) {
-//            Logger.getLogger(LoginChat.class.getName()).log(Level.SEVERE, null, ex);
-//        }
-//    }
-//
-//    public void borrarUsuario(String username) throws SQLException {
-//        try {
-//            InitialContext initialcontext = new InitialContext();
-//            DataSource datasource;
-//            datasource = (DataSource) initialcontext.lookup("jdbc/galaxiaDatabase");
-//            Connection conn = datasource.getConnection();
-//            String query = " delete from tb_users where email='" + username + "';";
-//            Statement st;
-//            st = conn.createStatement();
-//            st.executeUpdate(query);
-//            conn.close();
-//        } catch (NamingException ex) {
-//            Logger.getLogger(LoginChat.class.getName()).log(Level.SEVERE, null, ex);
-//        }
-//    }
-//
-//    public String hash(String pass) throws NoSuchAlgorithmException, UnsupportedEncodingException {
-//        try {
-//            MessageDigest msdDigest = MessageDigest.getInstance("SHA-1");
-//            msdDigest.update(pass.getBytes("UTF-8"), 0, pass.length());
-//            pass = DatatypeConverter.printHexBinary(msdDigest.digest());
-//            return pass;
-//        } catch (Exception Ex) {
-//
-//        }
-//        return pass;
-//    }
 
     public void createTable() throws NamingException {
         try {
@@ -170,6 +64,12 @@ public class DataBaseHandler {
         datasource = (DataSource) initialcontext.lookup("jdbc/galaxiaDatabase");
         Connection conn = datasource.getConnection();
 
+        String query3 = "select * from galaxias where nombreGalaxia ='" + galaxia.getNombre() + "';";
+        Statement st3 = conn.createStatement();
+        ResultSet rs2 = st3.executeQuery(query3);
+        if (rs2.next()) {
+            return null;
+        }
         String query = "insert into galaxias (nombreGalaxia) values('" + galaxia.getNombre() + "');";
         Statement st = conn.createStatement();
         st.executeUpdate(query);
@@ -388,10 +288,17 @@ public class DataBaseHandler {
             DataSource datasource;
             datasource = (DataSource) initialcontext.lookup("jdbc/galaxiaDatabase");
             Connection conn = datasource.getConnection();
-            String query = "insert into usuarios (nombre,password) values('" + usuario + "','" + password + "');";
-            Statement st = conn.createStatement();
-            st.executeUpdate(query);
-            respuesta = "Se ha registrado correctamente el usuario";
+            String query2 = "select * from usuarios where nombre ='" + usuario + "' and password = '" + password + "';";
+            Statement st2 = conn.createStatement();
+            ResultSet rs = st2.executeQuery(query2);
+            if (rs.next()) {
+                respuesta = "Ya existe ese usuario";
+            } else {
+                String query = "insert into usuarios (nombre,password) values('" + usuario + "','" + password + "');";
+                Statement st = conn.createStatement();
+                st.executeUpdate(query);
+                respuesta = "Se ha registrado correctamente el usuario";
+            }
         } catch (Exception e) {
             System.out.println(e);
         }
@@ -436,24 +343,23 @@ public class DataBaseHandler {
         return usuarioId;
     }
 
-    public void compobarToken(String token) throws NamingException, SQLException {
-        String respuesta = "";
+    public boolean compobarToken(String token) {
+        Boolean resultado = false;
         try {
             InitialContext initialcontext = new InitialContext();
             DataSource datasource;
             datasource = (DataSource) initialcontext.lookup("jdbc/galaxiaDatabase");
             Connection conn = datasource.getConnection();
             String query = "select usuarioId from usuarios where token ='" + token + "';";
+            System.out.println(query);
             Statement st = conn.createStatement();
             ResultSet rs = st.executeQuery(query);
             if (rs.next()) {
-                respuesta = rs.getString(1);
-                System.out.println("eeeeeeeeeeeeeeeeeeeeeooo" + respuesta);
+                resultado = true;
             }
-            st.executeQuery(query);
-        } catch (Exception e) {
-            System.out.println(e);
+        } catch (Exception ex) {
+            System.out.println(ex);
         }
+        return resultado;
     }
-
 }
