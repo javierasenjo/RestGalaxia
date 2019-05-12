@@ -22,10 +22,12 @@ import javax.ws.rs.core.MediaType;
 import Pojo.Galaxia;
 import Pojo.ListaPlanetas;
 import Pojo.Planeta;
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.naming.NamingException;
+import javax.ws.rs.core.SecurityContext;
 
 /**
  * REST Web Service
@@ -40,6 +42,8 @@ public class ServiciosGalaxia {
     @Context
     private UriInfo context;
     DataBaseHandler dataBaseHandler = new DataBaseHandler();
+    @Context
+    SecurityContext securityContext;
 
     /**
      * Creates a new instance of GenericResource2
@@ -56,10 +60,12 @@ public class ServiciosGalaxia {
     @POST
     @Consumes(MediaType.APPLICATION_XML)
     @NecesidadToken
-    public Galaxia postGalaxia(Galaxia galaxia2) {
+    public Galaxia postGalaxia(Galaxia galaxia2, @Context SecurityContext securityContext) {
         Galaxia galaxiaRes = null;
+        Principal principal = securityContext.getUserPrincipal();
+        Integer usuarioId = Integer.parseInt(principal.getName());
         try {
-            galaxiaRes = dataBaseHandler.crearGalaxia(galaxia2);
+            galaxiaRes = dataBaseHandler.crearGalaxia(galaxia2, usuarioId);
         } catch (Exception ex) {
             Logger.getLogger(ServiciosGalaxia.class.getName()).log(Level.SEVERE, null, ex);
             System.out.println(ex);
@@ -68,19 +74,20 @@ public class ServiciosGalaxia {
     }
 
     @GET
-    @Path("{numGalaxia}")
     @NecesidadToken
     @Produces(MediaType.APPLICATION_XML)
-    public Galaxia getGalaxia(@PathParam("numGalaxia") int numGalaxia) {
+    public Galaxia getGalaxia(@Context SecurityContext securityContext) {
+        Integer numGalaxia = getGalaxiaIdPorUsuarioId(securityContext);
         return dataBaseHandler.obtenerGalaxia(numGalaxia);
     }
 
     @POST
-    @Path("{numGalaxia}/planeta")
+    @Path("/planeta")
     @NecesidadToken
     @Consumes(MediaType.APPLICATION_XML)
-    public Planeta postPlaneta(Planeta planeta, @PathParam("numGalaxia") int numGalaxia) {
+    public Planeta postPlaneta(Planeta planeta, @Context SecurityContext securityContext) {
         Planeta planeta2 = null;
+        Integer numGalaxia = getGalaxiaIdPorUsuarioId(securityContext);
         try {
             planeta2 = dataBaseHandler.crearPlaneta(planeta, numGalaxia);
 
@@ -91,11 +98,12 @@ public class ServiciosGalaxia {
     }
 
     @GET
-    @Path("{numGalaxia}/planeta")
+    @Path("/planeta")
     @NecesidadToken
     @Produces(MediaType.APPLICATION_XML)
-    public ListaPlanetas getPlanetas(@PathParam("numGalaxia") int numGalaxia) {
+    public ListaPlanetas getPlanetas(@Context SecurityContext securityContext) {
         List<Planeta> planetas = null;
+        Integer numGalaxia = getGalaxiaIdPorUsuarioId(securityContext);
         try {
             planetas = dataBaseHandler.obtenerPlanetas(numGalaxia);
 
@@ -106,11 +114,12 @@ public class ServiciosGalaxia {
     }
 
     @GET
-    @Path("{numGalaxia}/planeta/{numPlaneta}")
+    @Path("/planeta/{numPlaneta}")
     @NecesidadToken
     @Produces(MediaType.APPLICATION_XML)
-    public Planeta getPlaneta(@PathParam("numPlaneta") int numPlaneta, @PathParam("numGalaxia") int numGalaxia) {
+    public Planeta getPlaneta(@PathParam("numPlaneta") int numPlaneta, @Context SecurityContext securityContext) {
         Planeta planeta = null;
+        Integer numGalaxia = getGalaxiaIdPorUsuarioId(securityContext);
         try {
             planeta = dataBaseHandler.obtenerPlaneta(numGalaxia, numPlaneta);
         } catch (Exception ex) {
@@ -120,12 +129,13 @@ public class ServiciosGalaxia {
     }
 
     @PUT
-    @Path("{numGalaxia}/planeta/{numPlaneta}")
+    @Path("/planeta/{numPlaneta}")
     @NecesidadToken
     @Consumes(MediaType.APPLICATION_XML)
     @Produces(MediaType.APPLICATION_XML)
-    public Planeta putPlaneta(@PathParam("numPlaneta") int numPlaneta, Planeta planeta, @PathParam("numGalaxia") int numGalaxia) {
+    public Planeta putPlaneta(@PathParam("numPlaneta") int numPlaneta, Planeta planeta, @Context SecurityContext securityContext) {
         Planeta planetaNuevo = null;
+        Integer numGalaxia = getGalaxiaIdPorUsuarioId(securityContext);
         try {
             planetaNuevo = dataBaseHandler.modificarPlaneta(planeta, numPlaneta, numGalaxia);
         } catch (Exception ex) {
@@ -135,11 +145,12 @@ public class ServiciosGalaxia {
     }
 
     @DELETE
-    @Path("{numGalaxia}/planeta/{numPlaneta}")
+    @Path("/planeta/{numPlaneta}")
     @NecesidadToken
     // @Consumes(MediaType.APPLICATION_XML)
-    public Galaxia deletePlaneta(@PathParam("numPlaneta") int numPlaneta, @PathParam("numGalaxia") int numGalaxia) {
+    public Galaxia deletePlaneta(@PathParam("numPlaneta") int numPlaneta, @Context SecurityContext securityContext) {
         Galaxia galaxia = null;
+        Integer numGalaxia = getGalaxiaIdPorUsuarioId(securityContext);
         try {
             galaxia = dataBaseHandler.borrarPlaneta(numGalaxia, numPlaneta);
         } catch (Exception ex) {
@@ -149,16 +160,23 @@ public class ServiciosGalaxia {
     }
 
     @GET
-    @Path("{numGalaxia}/planeta/texto")
+    @Path("/planeta/texto")
     @NecesidadToken
     @Produces(MediaType.TEXT_PLAIN)
-    public String getPlanetasTexto(@PathParam("numGalaxia") int numGalaxia) {
+    public String getPlanetasTexto(@Context SecurityContext securityContext) {
         String respuesta;
+        Integer numGalaxia = getGalaxiaIdPorUsuarioId(securityContext);
         try {
             respuesta = dataBaseHandler.obtenerGalaxia(numGalaxia).toString();
         } catch (Exception ex) {
             respuesta = ex.toString();
         }
         return respuesta;
+    }
+
+    public Integer getGalaxiaIdPorUsuarioId(SecurityContext securityContext) {
+        Principal principal = securityContext.getUserPrincipal();
+        Integer usuarioId = Integer.parseInt(principal.getName());
+        return dataBaseHandler.getGalaxiaId(usuarioId);
     }
 }

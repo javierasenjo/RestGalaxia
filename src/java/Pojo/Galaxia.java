@@ -132,6 +132,6 @@ public class Galaxia implements Serializable {
     }
 
     public String crearLink(int idGalaxia) {
-        return "http://localhost:8080/RestGalaxia/webresources/galaxia/" + idGalaxia;
+        return "http://localhost:8080/RestGalaxia/webresources/galaxia/";
     }
 }

@@ -58,7 +58,7 @@ public class DataBaseHandler {
 //solo una tabla planeta, tener pojo planeta con id pero no obligatorio
     //pool ya funciona
 
-    public Galaxia crearGalaxia(Galaxia galaxia) throws NamingException, SQLException {
+    public Galaxia crearGalaxia(Galaxia galaxia, Integer usuarioId) throws NamingException, SQLException {
         InitialContext initialcontext = new InitialContext();
         DataSource datasource;
         datasource = (DataSource) initialcontext.lookup("jdbc/galaxiaDatabase");
@@ -70,7 +70,8 @@ public class DataBaseHandler {
         if (rs2.next()) {
             return null;
         }
-        String query = "insert into galaxias (nombreGalaxia) values('" + galaxia.getNombre() + "');";
+
+        String query = "insert into galaxias (nombreGalaxia,usuarioId) values('" + galaxia.getNombre() + "'," + usuarioId + ");";
         Statement st = conn.createStatement();
         st.executeUpdate(query);
 
@@ -343,23 +344,43 @@ public class DataBaseHandler {
         return usuarioId;
     }
 
-    public boolean compobarToken(String token) {
-        Boolean resultado = false;
+    public Integer compobarToken(String token) {
+        Integer usuarioId = null;
         try {
             InitialContext initialcontext = new InitialContext();
             DataSource datasource;
             datasource = (DataSource) initialcontext.lookup("jdbc/galaxiaDatabase");
             Connection conn = datasource.getConnection();
             String query = "select usuarioId from usuarios where token ='" + token + "';";
-            System.out.println(query);
+            //System.out.println(query);
             Statement st = conn.createStatement();
             ResultSet rs = st.executeQuery(query);
             if (rs.next()) {
-                resultado = true;
+                usuarioId = rs.getInt(1);
             }
         } catch (Exception ex) {
             System.out.println(ex);
         }
-        return resultado;
+        return usuarioId;
+    }
+
+    public Integer getGalaxiaId(Integer usuarioId) {
+        Integer galaxiaId = 0;
+        try {
+            InitialContext initialcontext = new InitialContext();
+            DataSource datasource;
+            datasource = (DataSource) initialcontext.lookup("jdbc/galaxiaDatabase");
+            Connection conn = datasource.getConnection();
+            String query = "select galaxiaId from galaxias where usuarioId =" + usuarioId + ";";
+            Statement st = conn.createStatement();
+            ResultSet rs = st.executeQuery(query);
+            if (rs.next()) {
+                galaxiaId = rs.getInt(1);
+            }
+            conn.close();
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+        return galaxiaId;
     }
 }

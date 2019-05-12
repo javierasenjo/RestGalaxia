@@ -6,6 +6,7 @@
 package RestServices;
 
 import BBDD.DataBaseHandler;
+import java.security.Principal;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -16,6 +17,7 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.ext.Provider;
 
 /**
@@ -25,12 +27,12 @@ import javax.ws.rs.ext.Provider;
 @Provider
 @NecesidadToken
 @Priority(Priorities.AUTHENTICATION)
-public class FiltroAutentificacicion implements ContainerRequestFilter {
+public class FiltroAutentificacion implements ContainerRequestFilter {
 
     private static final String REALM = "example";
     private static final String AUTHENTICATION_SCHEME = "Bearer";
 
-    Boolean resultado = false;
+    Integer usuaioId = null;
     DataBaseHandler dataBaseHandler = new DataBaseHandler();
 
     @Override
@@ -46,12 +48,37 @@ public class FiltroAutentificacicion implements ContainerRequestFilter {
             return;
         }
 
-        if (validateToken(authorizationHeader)) {
-            System.out.println("Token valido");
+        if (validateToken(authorizationHeader) != null) {
+            usuaioId = validateToken(authorizationHeader);
+            //System.out.println("Token valido");
         } else {
             System.out.println("no funciona");
             abortWithUnauthorized(requestContext);
         }
+
+        final SecurityContext currentSecurityContext = requestContext.getSecurityContext();
+        requestContext.setSecurityContext(new SecurityContext() {
+
+            @Override
+            public Principal getUserPrincipal() {
+                return () -> usuaioId.toString();
+            }
+
+            @Override
+            public boolean isUserInRole(String role) {
+                return true;
+            }
+
+            @Override
+            public boolean isSecure() {
+                return currentSecurityContext.isSecure();
+            }
+
+            @Override
+            public String getAuthenticationScheme() {
+                return AUTHENTICATION_SCHEME;
+            }
+        });
     }
 
     private boolean isTokenBasedAuthentication(String authorizationHeader) {
@@ -73,7 +100,7 @@ public class FiltroAutentificacicion implements ContainerRequestFilter {
                         .build());
     }
 
-    private boolean validateToken(String token) {
+    private Integer validateToken(String token) {
 
         // Check if the token was issued by the server and if it's not expired
         // Throw an Exception if the token is invalid

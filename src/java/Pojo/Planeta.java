@@ -123,6 +123,6 @@ public class Planeta implements Serializable {
     }
 
     public String crearLink(int idPlaneta, int idGalaxia) {
-        return "http://localhost:8080/RestGalaxia/webresources/galaxia/" + idGalaxia + "/planeta/" + idPlaneta;
+        return "http://localhost:8080/RestGalaxia/webresources/galaxia/planeta/" + idPlaneta;
     }
 }
