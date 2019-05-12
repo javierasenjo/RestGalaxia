@@ -167,7 +167,7 @@ public class DataBaseHandler {
         return planeta2;
     }
 
-    private static void annadirLinkPlaneta(Planeta planeta) throws NamingException, SQLException {
+    private void annadirLinkPlaneta(Planeta planeta) throws NamingException, SQLException {
         InitialContext initialcontext = new InitialContext();
         DataSource datasource;
         datasource = (DataSource) initialcontext.lookup("jdbc/galaxiaDatabase");
@@ -189,7 +189,7 @@ public class DataBaseHandler {
         conn.close();
     }
 
-    private static void annadirLinkGalaxia(Galaxia galaxia) throws NamingException, SQLException {
+    private void annadirLinkGalaxia(Galaxia galaxia) throws NamingException, SQLException {
         InitialContext initialcontext = new InitialContext();
         DataSource datasource;
         datasource = (DataSource) initialcontext.lookup("jdbc/galaxiaDatabase");

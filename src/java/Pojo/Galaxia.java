@@ -42,7 +42,8 @@ public class Galaxia implements Serializable {
         this.nombre = nombre;
         this.planetas = planetas;
     }
-    public Galaxia(Integer galaxiaId,String nombre, List<Planeta> planetas, String link) {
+
+    public Galaxia(Integer galaxiaId, String nombre, List<Planeta> planetas, String link) {
         this.nombre = nombre;
         this.planetas = planetas;
         this.idGalaxia = galaxiaId;

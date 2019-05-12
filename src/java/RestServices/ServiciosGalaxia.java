@@ -55,6 +55,7 @@ public class ServiciosGalaxia {
      * Retrieves representation of an instance of Pojo.ServiciosGalaxia
      *
      * @param galaxia2
+     * @param securityContext
      * @return an instance of java.lang.String
      */
     @POST

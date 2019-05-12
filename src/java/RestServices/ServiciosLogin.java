@@ -6,6 +6,7 @@
 package RestServices;
 
 import BBDD.DataBaseHandler;
+import Pojo.Usuario;
 import com.sun.codemodel.JSwitch;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -60,16 +61,19 @@ public class ServiciosLogin {
      * @return
      */
     @POST
-    @Consumes(MediaType.TEXT_PLAIN)
-    public String loginear(@QueryParam("usuario") String usuario, @QueryParam("password") String password) {
+    @Consumes(MediaType.APPLICATION_XML)
+    public String loginear(Usuario usuario) {
         String respuesta = "";
+        String nombre = usuario.getNombre();
+        String password = usuario.getNombre();
+
         try {
-            respuesta = dataBaseHandler.comprobarUsuario(usuario, password);
+            respuesta = dataBaseHandler.comprobarUsuario(nombre, password);
             //Algorithm algorithm = Algorithm.HMAC256(usuario);
             //Creamos token si es el login es correcto
             if (respuesta.equals("Usuario válido")) {
                 String token = generarToken(30);
-                dataBaseHandler.guardarToken(usuario, password, token);
+                dataBaseHandler.guardarToken(nombre, password, token);
                 return token;
             }
         } catch (Exception ex) {

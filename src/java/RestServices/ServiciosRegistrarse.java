@@ -6,6 +6,7 @@
 package RestServices;
 
 import BBDD.DataBaseHandler;
+import Pojo.Usuario;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ws.rs.core.Context;
@@ -58,11 +59,14 @@ public class ServiciosRegistrarse {
      * @return
      */
     @POST
-    @Consumes(MediaType.TEXT_PLAIN)
-    public String signup(@QueryParam("usuario") String usuario, @QueryParam("password") String password) {
+    @Consumes(MediaType.APPLICATION_XML)
+    public String signup(Usuario usuario) {
         String respuesta = "";
+        String nombre = usuario.getNombre();
+        String password = usuario.getNombre();
+        
         try {
-            respuesta = dataBaseHandler.registrarUsuario(usuario, password);
+            respuesta = dataBaseHandler.registrarUsuario(nombre, password);
             //crearToken
         } catch (Exception ex) {
             Logger.getLogger(ServiciosGalaxia.class.getName()).log(Level.SEVERE, null, ex);
