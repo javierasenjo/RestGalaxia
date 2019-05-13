@@ -63,7 +63,7 @@ public class ServiciosRegistrarse {
     public String signup(Usuario usuario) {
         String respuesta = "";
         String nombre = usuario.getNombre();
-        String password = usuario.getNombre();
+        String password = usuario.getPassword();
         
         try {
             respuesta = dataBaseHandler.registrarUsuario(nombre, password);

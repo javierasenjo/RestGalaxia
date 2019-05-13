@@ -65,7 +65,7 @@ public class ServiciosLogin {
     public String loginear(Usuario usuario) {
         String respuesta = "";
         String nombre = usuario.getNombre();
-        String password = usuario.getNombre();
+        String password = usuario.getPassword();
 
         try {
             respuesta = dataBaseHandler.comprobarUsuario(nombre, password);
