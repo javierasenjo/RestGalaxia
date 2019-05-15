@@ -12,14 +12,18 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
+			<xs:element name="linkGalaxia" type="xs:string"></xs:element>
+			<xs:element name="idGalaxia" type="xs:int"></xs:element>
 			</xs:sequence>			
 		</xs:complexType>
         </xs:element>
 		<xs:complexType name="Planeta" >
 			   <xs:sequence>
+					  <xs:element name="idPlaneta" type="xs:int"></xs:element>
 					  <xs:element name="nombre" type="xs:string"></xs:element>
 					  <xs:element name="edad" type="xs:int"></xs:element>
 					  <xs:element name="radio" type="xs:double"></xs:element>
+					  <xs:element name="linkPlaneta" type="xs:string"></xs:element>
 				</xs:sequence>
 		</xs:complexType>
    </xs:schema>

@@ -41,13 +41,14 @@ public class FiltroAutentificacion implements ContainerRequestFilter {
         // Get the Authorization header from the request
         String authorizationHeader
                 = requestContext.getHeaderString(HttpHeaders.AUTHORIZATION);
-
+        System.out.println("Header: " + authorizationHeader);
         // Validate the Authorization header
         if (!isTokenBasedAuthentication(authorizationHeader)) {
             abortWithUnauthorized(requestContext);
             return;
         }
-
+        
+        
         if (validateToken(authorizationHeader) != null) {
             usuaioId = validateToken(authorizationHeader);
             //System.out.println("Token valido");

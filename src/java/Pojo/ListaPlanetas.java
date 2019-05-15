@@ -27,7 +27,7 @@ public class ListaPlanetas implements Serializable {
     }
 
     public ListaPlanetas(List<Planeta> lPlanetas) {
-        this.planetas=lPlanetas;
+        this.planetas = lPlanetas;
     }
     @XmlElement(name = "Planeta")
     private List<Planeta> planetas = new ArrayList();
@@ -46,4 +46,13 @@ public class ListaPlanetas implements Serializable {
         this.planetas = planetas;
     }
 
+    @Override
+    public String toString() {
+        String respuesta = "";
+        for (int i = 0; i < planetas.size(); i++) {
+            respuesta += ("\n Planeta " + planetas.get(i).getIdPlaneta() + ":    Nombre: " + planetas.get(i).getNombre() + "    Edad : " + planetas.get(i).getEdad() + "    Radio: " + planetas.get(i).getRadio());
+            respuesta += ("\n       Link " + ": " + planetas.get(i).getLinkPlaneta());
+        };
+        return respuesta;
+    }
 }
