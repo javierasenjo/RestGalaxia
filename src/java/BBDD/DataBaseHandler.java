@@ -63,6 +63,7 @@ public class DataBaseHandler {
         Connection conn = null;
         Statement st = null;
         ResultSet rs = null;
+
         try {
             InitialContext initialcontext = new InitialContext();
             DataSource datasource;
@@ -71,18 +72,19 @@ public class DataBaseHandler {
 
             st = conn.createStatement();
 
-            String query3 = "select * from galaxias where nombreGalaxia ='" + galaxia.getNombre() + "';";
+            String query3 = "select * from galaxias where usuarioId ='" + usuarioId + "';";
             rs = st.executeQuery(query3);
             if (rs.next()) {
-                return null;
+                String query4 = "update galaxias set nombreGalaxia = '" + galaxia.getNombre() + "' where usuarioId = " + usuarioId + ";";
+                st.executeUpdate(query4);
+            } else {
+
+                String query = "insert into galaxias (nombreGalaxia,usuarioId) values('" + galaxia.getNombre() + "'," + usuarioId + ");";
+
+                st.executeUpdate(query);
+
+                annadirLinkGalaxia(galaxia);
             }
-
-            String query = "insert into galaxias (nombreGalaxia,usuarioId) values('" + galaxia.getNombre() + "'," + usuarioId + ");";
-
-            st.executeUpdate(query);
-
-            annadirLinkGalaxia(galaxia);
-
             String query2 = "select galaxiaId from galaxias where nombreGalaxia ='" + galaxia.getNombre() + "';";
             rs = st.executeQuery(query2);
             int galaxiaId = 0;
@@ -94,6 +96,7 @@ public class DataBaseHandler {
                 planeta = galaxia.getPlaneta(i);
                 crearPlaneta(planeta, galaxiaId);
             }
+
             galaxiaRes = obtenerGalaxia(galaxiaId);
         } catch (Exception ex) {
             System.out.println(ex);
@@ -328,7 +331,7 @@ public class DataBaseHandler {
             DataSource datasource;
             datasource = (DataSource) initialcontext.lookup("jdbc/galaxiaDatabase");
             conn = datasource.getConnection();
-            String query = "select * from usuarios where nombre ='" + usuario + "' and password = '" + password + "';";
+            String query = "select * from usuarios where nombre ='" + usuario + "' and password = sha1('" + password + "');";
             st = conn.createStatement();
             rs = st.executeQuery(query);
             if (rs.next()) {
@@ -342,6 +345,25 @@ public class DataBaseHandler {
         return respuesta;
     }
 
+    public void borrarToken(Integer usuarioId) {
+        Connection conn = null;
+        Statement st = null;
+        ResultSet rs = null;
+        try {
+            InitialContext initialcontext = new InitialContext();
+            DataSource datasource;
+            datasource = (DataSource) initialcontext.lookup("jdbc/galaxiaDatabase");
+            conn = datasource.getConnection();
+            String query = "update usuarios set token =null where usuarioId = '" + usuarioId + "';";
+            st = conn.createStatement();
+            st.executeUpdate(query);
+        } catch (Exception ex) {
+            System.out.println(ex);
+        } finally {
+            liberarRecursos(rs, st, conn);
+        }
+    }
+
     public String registrarUsuario(String usuario, String password) {
         //comprobar si ya existe nombre en bbdd
         String respuesta = "";
@@ -353,13 +375,13 @@ public class DataBaseHandler {
             DataSource datasource;
             datasource = (DataSource) initialcontext.lookup("jdbc/galaxiaDatabase");
             conn = datasource.getConnection();
-            String query2 = "select * from usuarios where nombre ='" + usuario + "' and password = '" + password + "';";
+            String query2 = "select * from usuarios where nombre ='" + usuario + "' and password = sha1('" + password + "');";
             st = conn.createStatement();
             rs = st.executeQuery(query2);
             if (rs.next()) {
                 respuesta = "Ya existe ese usuario";
             } else {
-                String query = "insert into usuarios (nombre,password) values('" + usuario + "','" + password + "');";
+                String query = "insert into usuarios (nombre,password) values('" + usuario + "',sha1('" + password + "'));";
                 st.executeUpdate(query);
                 respuesta = "Se ha registrado correctamente el usuario";
             }
@@ -402,7 +424,7 @@ public class DataBaseHandler {
             DataSource datasource;
             datasource = (DataSource) initialcontext.lookup("jdbc/galaxiaDatabase");
             conn = datasource.getConnection();
-            String query = "select usuarioId from usuarios where nombre ='" + usuario + "' and password = '" + password + "';";
+            String query = "select usuarioId from usuarios where nombre ='" + usuario + "' and password = sha1('" + password + "');";
             st = conn.createStatement();
             rs = st.executeQuery(query);
 
@@ -419,7 +441,7 @@ public class DataBaseHandler {
         return usuarioId;
     }
 
-    public Integer compobarToken(String token) {
+    public Integer comprobarToken(String token) {
         Integer usuarioId = null;
         Connection conn = null;
         Statement st = null;

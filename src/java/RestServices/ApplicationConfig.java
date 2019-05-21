@@ -32,6 +32,7 @@ public class ApplicationConfig extends Application {
         resources.add(RestServices.FiltroAutentificacion.class);
         resources.add(RestServices.ServiciosGalaxia.class);
         resources.add(RestServices.ServiciosLogin.class);
+        resources.add(RestServices.ServiciosLogout.class);
         resources.add(RestServices.ServiciosRegistrarse.class);
         resources.add(RestServices.ServiciosValidador.class);
     }

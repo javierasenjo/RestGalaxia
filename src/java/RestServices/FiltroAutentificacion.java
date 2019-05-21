@@ -32,7 +32,7 @@ public class FiltroAutentificacion implements ContainerRequestFilter {
     private static final String REALM = "example";
     private static final String AUTHENTICATION_SCHEME = "Bearer";
 
-    Integer usuaioId = null;
+    Integer usuarioId = null;
     DataBaseHandler dataBaseHandler = new DataBaseHandler();
 
     @Override
@@ -50,7 +50,7 @@ public class FiltroAutentificacion implements ContainerRequestFilter {
         
         
         if (validateToken(authorizationHeader) != null) {
-            usuaioId = validateToken(authorizationHeader);
+            usuarioId = validateToken(authorizationHeader);
             //System.out.println("Token valido");
         } else {
             System.out.println("no funciona");
@@ -62,7 +62,7 @@ public class FiltroAutentificacion implements ContainerRequestFilter {
 
             @Override
             public Principal getUserPrincipal() {
-                return () -> usuaioId.toString();
+                return () -> usuarioId.toString();
             }
 
             @Override
@@ -105,7 +105,7 @@ public class FiltroAutentificacion implements ContainerRequestFilter {
 
         // Check if the token was issued by the server and if it's not expired
         // Throw an Exception if the token is invalid
-        return dataBaseHandler.compobarToken(token);
+        return dataBaseHandler.comprobarToken(token);
     }
 
 }

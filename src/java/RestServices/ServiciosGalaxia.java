@@ -34,7 +34,7 @@ import javax.ws.rs.core.SecurityContext;
  *
  * @author javie
  */
-@Singleton
+//@Singleton
 @Path("galaxia")
 public class ServiciosGalaxia {
 
