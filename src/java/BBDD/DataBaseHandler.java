@@ -75,8 +75,12 @@ public class DataBaseHandler {
             String query3 = "select * from galaxias where usuarioId ='" + usuarioId + "';";
             rs = st.executeQuery(query3);
             if (rs.next()) {
+                Integer galaxiaId = rs.getInt(1);
                 String query4 = "update galaxias set nombreGalaxia = '" + galaxia.getNombre() + "' where usuarioId = " + usuarioId + ";";
                 st.executeUpdate(query4);
+                borrarPlanetas(galaxiaId);
+                galaxiaRes = obtenerGalaxia(galaxiaId);
+                return galaxiaRes;
             } else {
 
                 String query = "insert into galaxias (nombreGalaxia,usuarioId) values('" + galaxia.getNombre() + "'," + usuarioId + ");";
@@ -489,6 +493,26 @@ public class DataBaseHandler {
             liberarRecursos(rs, st, conn);
         }
         return galaxiaId;
+    }
+
+    public void borrarPlanetas(Integer idGalaxia) {
+        Galaxia galaxia = null;
+        Connection conn = null;
+        Statement st = null;
+        ResultSet rs = null;
+        try {
+            InitialContext initialcontext = new InitialContext();
+            DataSource datasource;
+            datasource = (DataSource) initialcontext.lookup("jdbc/galaxiaDatabase");
+            conn = datasource.getConnection();
+            st = conn.createStatement();
+            String query5 = "delete from planetas where galaxiaId = " + idGalaxia + ";";
+            st.executeUpdate(query5);
+        } catch (Exception e) {
+            System.out.println(e);
+        } finally {
+            liberarRecursos(rs, st, conn);
+        }
     }
 
     public static void liberarRecursos(ResultSet rs, Statement st, Connection conn) {
