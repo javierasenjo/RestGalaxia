@@ -81,7 +81,7 @@ public class Galaxia implements Serializable {
         String respuesta = "";
         respuesta += ("Nombre de la galaxia: " + nombre);
         for (int i = 0; i < planetas.size(); i++) {
-            respuesta += ("\n Planeta " + i + ": " + planetas.get(i).toString());
+            respuesta += ("\n Planeta " + planetas.get(i).getIdPlaneta() + ": " + planetas.get(i).toString());
         };
         return respuesta;
     }
